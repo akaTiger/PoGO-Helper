@@ -2,6 +2,8 @@ import lib
 import urllib.error
 import urllib.request
 import json
+from collections import namedtuple
+import os
 
 class pokeNotFound(Exception):
     pass
@@ -12,7 +14,7 @@ class setUpError(Exception):
 class argumentError(Exception):
     pass
     
-class Pokedex(object):
+class pokedexOnlineAPI(object):
     def __init__(self):
         self.name = None
         print(lib.getInitMessage())
@@ -72,8 +74,27 @@ class Pokedex(object):
     def getAllPokemon(self, outputType: str):
         request = urllib.request.Request(url=(lib.getListAllURL()),headers=lib.getHeader())
         info = json.loads(urllib.request.urlopen(request).read().decode())
-        if outputType == "1":
+        if outputType == "list":
+            return [i["name"] for i in info["results"] if "-" not in i["name"]]
+        elif outputType == "dict":
+            dOut = {}
             startNum = 1
-            partA = f'Number of Pokémon: {info["count"]}\n'
-            partB = 
-        elif outputType == "2":
+            for i in info["results"]:
+                if "-" not in i["name"]:
+                    dOut[f"{startNum:0>3}"] = i["name"]
+                    startNum += 1
+            return dOut
+        elif outputType == "lont":
+            l = []
+            pokeTuple = namedtuple('pokeTuple', ['name', 'id', 'type'])
+            for i in [i["name"] for i in info["results"] if "-" not in i["name"]]:
+                self.setPoke(i)
+                thisPoke = pokeTuple(name=str(i).title(), id=self.getID(), type=self.getType())
+                l.append(thisPoke)
+            return l
+
+if __name__ == "__main__":
+    os.system('cls' if os.name=='nt' else 'clear')
+    api = pokedexOnlineAPI()
+    api.setPoke("charizard")
+    print(api.getAllPokemon("lont"))
